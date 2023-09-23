@@ -15,13 +15,6 @@ in
 
     config = {
 
-        # environment.systemPackages =  with pkgs; [
-        #     system.octoprint
-        #     system.klipper
-        #     system.klipper-firmware
-        #     system.klipper-flash
-        # ];
-
         environment.systemPackages =  with pkgs; [
             octoprint
             klipper
@@ -49,17 +42,16 @@ in
             user = "root";
             group = "root";
             enable = true;
-            # firmwares = {
-            #     mcu = {
-            #         enable = true;
-            #         # Run klipper-genconf to generate this
-            #         configFile = ./avr.cfg;
-            #         # Serial port connected to the microcontroller
-            #         serial = null;
-            #         # serial = "/dev/serial/by-id/usb-Silicon_Labs_CP2102_USB_to_UART_Bridge_Controller_0001-if00-port0";
-            #         # description = lib.mdDoc "Path to serial port this printer is connected to. Leave `null` to derive it from `service.klipper.settings`.";
-            #     };
-            # };
+            firmwares = {
+                mcu = {
+                    enable = true;
+                    # Run klipper-genconf to generate this
+                    configFile = ./avr.cfg;
+                    # Serial port connected to the microcontroller
+                    serial = null;
+                    # description = lib.mdDoc "Path to serial port this printer is connected to. Leave `null` to derive it from `service.klipper.settings`.";
+                };
+            };
 
             # should move this to its own nix option as a path so it can be reused
             settings = {

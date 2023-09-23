@@ -4,12 +4,9 @@
     # options = {};
 
     config = {
-        sdImage.imageBaseName = "flight";
+        sdImage.imageBaseName = "rpi4-base";
         nix = {
-            # package = pkgs.nixFlakes;
-            # settings.sandbox = lib.mkDefault true;
-            # settings.sandbox = true;
-            # settings.system-features = [ "recursive-nix" ];
+            settings.system-features = [ "recursive-nix" ];
             extraOptions = ''
                 experimental-features = nix-command flakes recursive-nix
                 builders-use-substitutes = true
@@ -34,7 +31,7 @@
             mutableUsers = false;
             users.collin = {
                 isNormalUser = true;
-                # home = "/home/collin";
+                home = "/home/collin";
                 extraGroups = [ "wheel" "networkmanager" ];
                 # Replace with your public key
                 openssh.authorizedKeys.keys = [
@@ -69,15 +66,15 @@
         services.openssh.enable = true;
         services.gnome.gnome-keyring.enable = true;
 
-        # # Enable mDNS so that our printer is adressable under http://nixprinter.local
-        # services.avahi = {
-        #     enable = true;
-        #     publish = {
-        #         enable = true;
-        #         addresses = true;
-        #         workstation = true;
-        #     };
-        # };
+        # Enable mDNS so that our printer is adressable under http://nixprinter.local
+        services.avahi = {
+            enable = true;
+            publish = {
+                enable = true;
+                addresses = true;
+                workstation = true;
+            };
+        };
 
         # generic rpi 4 with gpu
         sound.enable = true;
@@ -91,22 +88,12 @@
                 kernelPackage = pkgs.device-tree_rpi;
                 overlays = [ "${pkgs.device-tree_rpi.overlays}/vc4-fkms-v3d.dtbo" ];
             };
-
-            # DEPEND ON NIX OS HARDWARE AND VENDOR KERNEL
-            # raspberry-pi."4".apply-overlays-dtmerge.enable = true;
-            # deviceTree = {
-            #     enable = true;
-            #     filter = "*rpi-4-*.dtb";
-            # };
-            # pulseaudio.enable = true;
-            # raspberry-pi."4".audio.enable = true;
+            pulseaudio.enable = true;
         };
 
         # DE
         services.xserver = {
             enable = true;
-            # displayManager.slim.enable = truesdImage.imageBaseName = "flight";
-
             desktopManager.gnome.enable = true;
             videoDrivers = [ "modesetting" ];
         };
@@ -121,38 +108,7 @@
         };
 
         boot.loader.raspberryPi.firmwareConfig = ''
-                #    start_x=1
-                   gpu_mem=256
-                   '';
-        # needed socamera will boot
-        #boot = {
-        #    loader = {
-        #        # Alternatives
-        #        # grub.enable = false;
-        #        # raspberryPi.uboot.enable = true; # this not being supported means camera wont work
-
-        #        raspberryPi.enable = true;
-        #        raspberryPi.version = 4;
-        #        raspberryPi.firmwareConfig = ''
-        #            start_x=1
-        #            gpu_mem=256
-        #            dtparam=audio=on
-        #        '';
-        #    };
-
-        #    tmp.cleanOnBoot = true;
-
-        #    # vendor kernel vs latest mainline
-        #    kernelPackages = pkgs.linuxKernel.packages.linux_rpi4;
-
-        #    # needed for video for linux
-        #    kernelModules = [ "bcm2835-v4l2" ];
-        #    # for serial console
-        #    kernelParams = [ "cma=256M" "console=ttyS1,115200n8" ];
-        #    extraModprobeConfig = ''
-        #    options cf680211 ieee80211_regdom="US"
-        #    '';
-        #    initrd.kernelModules = [ "vc4" "bcm2835_dma" "i2c_bcm2835" ];
-        #};
+                gpu_mem=256
+                '';
     };
 }
