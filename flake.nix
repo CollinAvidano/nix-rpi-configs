@@ -10,7 +10,7 @@
         #     inputs.nixpkgs.follows = "nixpkgs";
         # };
 
-        # nixos-hardware.url = "github:NixOS/nixos-hardware/master";
+        nixos-hardware.url = "github:NixOS/nixos-hardware/master";
     };
 
     outputs =
@@ -23,31 +23,27 @@
         let
             pkgs = import nixpkgs {
                 inherit system;
-                # crossSystem = { config = system; };
             };
         in
-            {
-            packages.nixosConfigurations = {
-                "nix-rpi-chiron" = nixpkgs.lib.nixosSystem {
-                    # system = "x86_64-linux";
-                    # system = "aarch64-linux";
-                    # TODO FIX SYSTEM THIS IS THE ISSUE
-                    specialArgs = {
-                        inherit inputs;
-                        inherit system;
-                        inherit pkgs;
+            rec {
+                packages.nixosConfigurations = {
+                    "nix-rpi-chiron" = nixpkgs.lib.nixosSystem {
+                        system = "aarch64-linux";
+                        specialArgs = {
+                            inherit inputs;
+                            inherit system;
+                            inherit pkgs;
+                        };
+                        modules = [
+                            ./rpi-base.nix
+                            ./klipper.nix
+                        ];
                     };
-                    # yes it is just taking the attribute set capture of everything into this flakes outputs
-                    # a module def may look like this the first couple args are handled by the def of nixosSystem
-                    # The later are just EVERYTHING GIVEN TO SPECIAL ARGS
-                    # helo
-                    modules = [
-                        ./rpi-base.nix
-                        ./klipper.nix
-                    ];
                 };
-            };
+
+                # packages.my-sd-card = packges.nixosConfigurations.nix-rpi-chiron.config.system.build.sdImage;
             }
+
     );
 
 }
