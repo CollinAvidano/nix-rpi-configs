@@ -1,9 +1,16 @@
-{ config, pkgs, lib, ... }@inputs:
+{ config, pkgs, lib, inputs, system, ... }:
 {
     imports = [ "${inputs.nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"];
     # options = {};
 
     config = {
+        # Setup cross compilation.
+        nixpkgs = {
+            localSystem.system = "x86_64-linux";
+            crossSystem.system = system;
+            config.allowUnsupportedSystem = true;
+        };
+
         sdImage.imageBaseName = "rpi4-base";
         nix = {
             settings.system-features = [ "recursive-nix" ];
@@ -15,6 +22,8 @@
             gc.automatic = true;
             gc.options = "--delete-older-than 30d";
         };
+
+        hardware.enableRedistributableFirmware = true;
 
         environment.systemPackages = with pkgs; [
             git
@@ -49,6 +58,22 @@
             };
         };
 
+        # DE
+        services.xserver = {
+            enable = true;
+            desktopManager.gnome.enable = true;
+            videoDrivers = [ "modesetting" ];
+        };
+
+        systemd.services.btattach = {
+            before = [ "bluetooth.service" ];
+            after = [ "dev-ttyAMA0.device" ];
+            wantedBy = [ "multi-user.target" ];
+            serviceConfig = {
+                ExecStart = "${pkgs.bluez}/bin/btattach -B /dev/ttyAMA0 -P bcm -S 3000000";
+            };
+        };
+
         networking = {
             # make this an option
             hostName = "nixprinter";
@@ -76,39 +101,86 @@
             };
         };
 
+        boot = {
+            kernelPackages = pkgs.linuxKernel.packages.linux_rpi4;
+            initrd.availableKernelModules = [ "xhci_pci" "usbhid" "usb_storage" ];
+            loader = {
+            grub.enable = false;
+            generic-extlinux-compatible.enable = true;
+            };
+        };
+
+
         # generic rpi 4 with gpu
-        sound.enable = true;
-        hardware = {
-            opengl = {
-                enable = true;
-                setLdLibraryPath = true;
-                package = pkgs.mesa_drivers;
-            };
-            deviceTree = {
-                kernelPackage = pkgs.device-tree_rpi;
-                overlays = [ "${pkgs.device-tree_rpi.overlays}/vc4-fkms-v3d.dtbo" ];
-            };
-            pulseaudio.enable = true;
-        };
+        # sound.enable = true;
+        # hardware = {
+        #     opengl = {
+        #         enable = true;
+        #         setLdLibraryPath = true;
+        #         package = pkgs.mesa_drivers;
+        #     };
+        #     deviceTree = {
+        #         kernelPackage = pkgs.device-tree_rpi;
+        #         overlays = [ "${pkgs.device-tree_rpi.overlays}/vc4-fkms-v3d.dtbo" ];
+        #     };
+        #     pulseaudio.enable = true;
+        # };
+        # boot.loader.raspberryPi.enable = true;
+        # boot.loader.grub.enable = false;
+        # boot.kernelPackages = pkgs.linuxPackages_rpi;
+        # boot.binfmt.emulatedSystems = [ "aarch64-linux" ];
 
-        # DE
-        services.xserver = {
-            enable = true;
-            desktopManager.gnome.enable = true;
-            videoDrivers = [ "modesetting" ];
-        };
+        # boot = {
+        #     kernelPackages = pkgs.linuxKernel.packages.linux_rpi4;
+        #     initrd.availableKernelModules = [ "xhci_pci" "usbhid" "usb_storage" ];
+        #     loader = {
+        #         grub.enable = false;
+        #         generic-extlinux-compatible.enable = true;
+        #     };
+        # };
+        # boot = {
+            # loader = {
+            #     # Alternatives
+            #     # grub.enable = false;
+            #     # raspberryPi.uboot.enable = true; # this not being supported means camera wont work
 
-        systemd.services.btattach = {
-            before = [ "bluetooth.service" ];
-            after = [ "dev-ttyAMA0.device" ];
-            wantedBy = [ "multi-user.target" ];
-            serviceConfig = {
-                ExecStart = "${pkgs.bluez}/bin/btattach -B /dev/ttyAMA0 -P bcm -S 3000000";
-            };
-        };
+            #     # raspberryPi.enable = true;
+            #     raspberryPi.version = 4;
+            #     raspberryPi.firmwareConfig = ''
+            #         start_x=1
+            #         gpu_mem=256
+            #         dtparam=audio=on
+            #     '';
+            # };
+        # };
 
-        boot.loader.raspberryPi.firmwareConfig = ''
-                gpu_mem=256
-                '';
+        # boot = {
+        #     loader = {
+        #         grub.enable = false;
+        #         generic-extlinux-compatible.enable = true;
+        #     };
+
+        #     tmp.cleanOnBoot = true;
+
+        #     # vendor kernel vs latest mainline
+        #     kernelPackages = pkgs.linuxKernel.packages.linux_rpi4;
+
+        #     # needed for video for linux
+        #     kernelModules = [ "bcm2835-v4l2" ];
+        #     # for serial console
+        #     kernelParams = [ "cma=256M" "console=ttyS1,115200n8" ];
+        #     extraModprobeConfig = ''
+        #     options cf680211 ieee80211_regdom="US"
+        #     '';
+        #     initrd.kernelModules = [ "vc4" "bcm2835_dma" "i2c_bcm2835" ];
+        # };
+        system.stateVersion = "23.05";
+
     };
+
+        # boot.loader.raspberryPi.firmwareConfig = ''
+        #         gpu_mem=256
+        #         '';
+
+    # };
 }

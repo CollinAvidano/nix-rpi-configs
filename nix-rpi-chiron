@@ -1,0 +1,14 @@
+{ config, pkgs, lib, inputs, system, ... }:
+inputs.nixpkgs.lib.nixosSystem {
+    inherit system;
+    specialArgs = {
+        inherit inputs;
+        inherit system;
+        inherit pkgs;
+    };
+    modules = [
+        ./rpi-base.nix
+        ./klipper.nix
+    ];
+};
+

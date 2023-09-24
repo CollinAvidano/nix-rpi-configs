@@ -19,31 +19,14 @@
         , flake-utils
         , ...
         }@inputs:
-    flake-utils.lib.eachDefaultSystem (system:
         let
-            pkgs = import nixpkgs {
-                inherit system;
-                config.allowUnfree = true;
-            };
+            overlays = [(final: prev: {
+                nix-rpi-chiron = final.callpackage ./nix-rpi-chiron.nix {inherit inputs; };
+            })];
         in
+            { inherit overlays; } // flake-utils.lib.eachDefaultSystem (system: rec
             {
-            packages.nixosConfigurations = {
-                nix-rpi-chiron = nixpkgs.lib.nixosSystem {
-                    # system = "x86_64-linux";
-                    system = "aarch64-linux";
-                    # TODO FIX SYSTEM THIS IS THE ISSUE
-                    specialArgs = inputs;
-                    # yes it is just taking the attribute set capture of everything into this flakes outputs
-                    # a module def may look like this the first couple args are handled by the def of nixosSystem
-                    # The later are just EVERYTHING GIVEN TO SPECIAL ARGS
-                    # helo
-                    modules = [
-                        ./rpi-base.nix
-                        ./klipper.nix
-                    ];
-                };
-            };
-            }
-    );
-
+                legacyPackages = import nixpkgs { inherit system; inherit overlays; };
+            })
+    ;
 }
