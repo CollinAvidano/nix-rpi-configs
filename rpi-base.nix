@@ -1,6 +1,8 @@
 { config, pkgs, lib, system, inputs, ... }:
 {
+    # imports = [ "${inputs.nixpkgs}/nixos/modules/installer/cd-dvd/sd-image-raspberrypi4.nix" ];
     imports = [ "${inputs.nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"];
+    # imports = [ "${inputs.nixpkgs}/nixos/modules/installer/cd-dvd/sd-image-raspberrypi4.nix" ];
     # options = {};
 
     config = {

@@ -22,13 +22,13 @@
     flake-utils.lib.eachDefaultSystem (system:
         let
             pkgs = import nixpkgs {
-                # inherit system;
-                crossSystem = { config = system; };
+                inherit system;
+                # crossSystem = { config = system; };
             };
         in
             {
             packages.nixosConfigurations = {
-                nix-rpi-chiron = nixpkgs.lib.nixosSystem {
+                "nix-rpi-chiron" = nixpkgs.lib.nixosSystem {
                     # system = "x86_64-linux";
                     # system = "aarch64-linux";
                     # TODO FIX SYSTEM THIS IS THE ISSUE
