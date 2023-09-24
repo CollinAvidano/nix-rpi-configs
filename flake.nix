@@ -22,17 +22,21 @@
     flake-utils.lib.eachDefaultSystem (system:
         let
             pkgs = import nixpkgs {
-                inherit system;
-                config.allowUnfree = true;
+                # inherit system;
+                crossSystem = { config = system; };
             };
         in
             {
             packages.nixosConfigurations = {
                 nix-rpi-chiron = nixpkgs.lib.nixosSystem {
                     # system = "x86_64-linux";
-                    system = "aarch64-linux";
+                    # system = "aarch64-linux";
                     # TODO FIX SYSTEM THIS IS THE ISSUE
-                    specialArgs = inputs;
+                    specialArgs = {
+                        inherit inputs;
+                        inherit system;
+                        inherit pkgs;
+                    };
                     # yes it is just taking the attribute set capture of everything into this flakes outputs
                     # a module def may look like this the first couple args are handled by the def of nixosSystem
                     # The later are just EVERYTHING GIVEN TO SPECIAL ARGS
