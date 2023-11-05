@@ -1,7 +1,4 @@
 { system, pkgs, ... }:
-let
-    system = pkgs.system;
-in
 {
 
     # imports = [];
@@ -14,7 +11,6 @@ in
     # };
 
     config = {
-
         environment.systemPackages =  with pkgs; [
             octoprint
             klipper
@@ -32,8 +28,8 @@ in
             wantedBy = [ "multi-user.target" ];
             description = "uStreamer for video0";
             serviceConfig = {
-            Type = "simple";
-            ExecStart = ''${pkgs.ustreamer}/bin/ustreamer --encoder=HW --persistent --drop-same-frames=30'';
+                Type = "simple";
+                ExecStart = ''${pkgs.ustreamer}/bin/ustreamer --encoder=HW --persistent --drop-same-frames=30'';
             };
         };
 

@@ -1,7 +1,6 @@
 { config, pkgs, lib, system, inputs, ... }:
 {
     imports = [
-        "${inputs.nixpkgs}/nixos/modules/installer/sd-card/sd-image.nix"
         "${inputs.nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
         "${inputs.nixos-hardware}/raspberry-pi/4"
     ];
@@ -10,9 +9,7 @@
 
     config = {
         sdImage.imageBaseName = "rpi4-base";
-
-        nixpkgs.localSystem.system = "x86_64-linux";
-        nixpkgs.crossSystem.system = system;
+        sdImage.compressImage = false;
 
         nix = {
             settings.system-features = [ "recursive-nix" ];
