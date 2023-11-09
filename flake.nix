@@ -28,13 +28,14 @@
         rec {
             nixosConfigurations.rpi4 = nixpkgs.lib.nixosSystem {
                 system = system;
-                specialArgs = {
-                    inherit inputs;
-                    inherit system;
-                };
+                #specialArgs = {
+                #    inherit inputs;
+                #    inherit system;
+                #};
                 modules = [
-                    ./rpi-4-base.nix
-                    ./klipper.nix
+                    "${inputs.nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
+                    #./rpi-4-base.nix
+                    #./klipper.nix
                 ];
             };
         };

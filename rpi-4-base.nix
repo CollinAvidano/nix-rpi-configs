@@ -103,7 +103,7 @@
         hardware = {
             raspberry-pi."4".fkms-3d.enable = true;
             raspberry-pi."4".apply-overlays-dtmerge.enable = true;
-            raspberry-pi."4".audio.enable = true;
+            #raspberry-pi."4".audio.enable = true;
             pulseaudio.enable = true;
         };
 
