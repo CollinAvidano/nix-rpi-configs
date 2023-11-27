@@ -1,7 +1,7 @@
-{ config, pkgs, lib, system, inputs, ... }:
+{ config, pkgs, lib, inputs, ... }:
 {
     imports = [
-        "${inputs.nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix"
+        "${inputs.nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64-new-kernel-no-zfs-installer.nix"
         "${inputs.nixos-hardware}/raspberry-pi/4"
     ];
 
@@ -11,10 +11,19 @@
         sdImage.imageBaseName = "rpi4-base";
         sdImage.compressImage = false;
 
+        # see these issues for why this is needed
+        #https://github.com/NixOS/nixpkgs/issues/154163
+        #https://github.com/NixOS/nixpkgs/issues/126755
+        #nixpkgs.overlays  = [
+        #  (final: prev: {
+        #    makeModulesClosure = x:
+        #      prev.makeModulesClosure (x // { allowMissing = true; });
+        #  })
+        #];
+
         nix = {
-            settings.system-features = [ "recursive-nix" ];
             extraOptions = ''
-                experimental-features = nix-command flakes recursive-nix
+                experimental-features = nix-command flakes
                 builders-use-substitutes = true
             '';
             # Automatically garbage collect
@@ -108,55 +117,5 @@
         };
 
         system.stateVersion = "23.05";
-
-
-        # boot = {
-        #     kernelPackages = pkgs.linuxKernel.packages.linux_rpi4;
-        #     initrd.availableKernelModules = [ "xhci_pci" "usbhid" "usb_storage" ];
-        #     loader = {
-        #         grub.enable = false;
-        #         generic-extlinux-compatible.enable = true;
-        #     };
-        # };
-
-        # hardware = {
-        #     opengl = {
-        #         enable = true;
-        #         setLdLibraryPath = true;
-        #         package = pkgs.mesa_drivers;
-        #     };
-        #     deviceTree = {
-        #         kernelPackage = pkgs.device-tree_rpi;
-        #         overlays = [ "${pkgs.device-tree_rpi.overlays}/vc4-fkms-v3d.dtbo" ];
-        #     };
-
-            # DEPEND ON NIX OS HARDWARE AND VENDOR KERNEL
-            # raspberry-pi."4".apply-overlays-dtmerge.enable = true;
-            # deviceTree = {
-            #     enable = true;
-            #     filter = "*rpi-4-*.dtb";
-            # };
-            # pulseaudio.enable = true;
-            # raspberry-pi."4".audio.enable = true;
-        # };
-        # generic rpi 4 with gpu
-        # sound.enable = true;
-        # hardware = {
-        #     opengl = {
-        #         enable = true;
-        #         setLdLibraryPath = true;
-        #         package = pkgs.mesa_drivers;
-        #     };
-        #     deviceTree = {
-        #         kernelPackage = pkgs.device-tree_rpi;
-        #         overlays = [ "${pkgs.device-tree_rpi.overlays}/vc4-fkms-v3d.dtbo" ];
-        #     };
-        #     pulseaudio.enable = true;
-        # };
-
-
-        # boot.loader.raspberryPi.firmwareConfig = ''
-        #         gpu_mem=256
-        #         '';
     };
 }
