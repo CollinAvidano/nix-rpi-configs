@@ -28,8 +28,7 @@
       users.collin = {
         isNormalUser = true;
         home = "/home/collin";
-        # extraGroups = [ "wheel" "networkmanager" ];
-        extraGroups = [ "wheel" ];
+        extraGroups = [ "wheel" "networkmanager" ];
         # Replace with your public key
         openssh.authorizedKeys.keys = [
           "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII+w/d1XGPnK4P3r8eUgbuhSKscJUYnWRe9z4LOUUlf/ collinavidano@gmail.com"
@@ -45,19 +44,28 @@
         ];
       };
     };
+    
+    # point is not to not have it in the store point is just for it to not be directly in the config or git
+    environment.etc = {
+      "secrets/wireless.env".source = "./wireless.env";
+    };
 
     networking = {
       # make this an option
       hostName = "nixprinter";
-      wireless = {
-        iwd.enable = true;
-        enable = false;
-        networks = {
-          "My ".psk = "My password";
-        };
-      };
       networkmanager.enable = true;
-      networkmanager.wifi.backend = "iwd";
+      wireless = {
+        enable = true; # controls wpa_suplicant backend
+        userControlled.enable = true;
+        environmentFile = "/env/secrets/wireless.env";
+
+        networks = {
+          butz = {
+              psk = "@PSK_HOME@";
+          }
+        };
+
+      };
     };
 
 
