@@ -5,11 +5,22 @@
     # inputs.nixos-hardware.nixos-hardware.nixosModules.raspberry-pi-4
   ];
 
-  # options = {};
+  #options = {
+  #  xnc.enable = lib.mkEnableOption "vnc";
+  #  xvfb.enable = lib.mkEnableOption "xvfb";
+  #};
 
   config = {
-    sdImage.imageBaseName = "rpi4-base";
-    sdImage.compressImage = false;
+
+    boot.loader.systemd-boot.enable = true;
+    boot.loader.efi.canTouchEfiVariables = true;
+
+    #hardware.opengl.enable = true;
+    #hardware.opengl.driSupport = true;
+    #hardware.opengl.driSupport32Bit = true;
+    #hardware.opengl.extraPackages = [ pkgs.mesa.drivers ];
+
+    #virtualisation.vmVariant.virtualisation.graphics = lib.mkForce true;
 
     environment.systemPackages = with pkgs; [
       git
@@ -17,10 +28,6 @@
       htop
       vim
       tmux
-      libraspberrypi
-      raspberrypi-eeprom
-      # (callPackage ./klipper.nix { }).klipper-firmware
-      # (callPackage ./klipper.nix { }).klipper-flash
     ];
 
     users = {
@@ -28,9 +35,11 @@
       users.collin = {
         isNormalUser = true;
         home = "/home/collin";
+        createHome = true;
         extraGroups = [ "wheel" "networkmanager" ];
         # Replace with your public key
         openssh.authorizedKeys.keys = [
+          "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAQht5JhjILDlhTrDGg7wxsDB07mWwfFO98U3s7xNc1T phanlax"
           "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII+w/d1XGPnK4P3r8eUgbuhSKscJUYnWRe9z4LOUUlf/ collinavidano@gmail.com"
           "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIF7+z7tj9qGcuG3dC0ofV2ayt+gPq+4wffi17eJVaNGx nyx-ubuntu@cavocado.net"
           "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHzE6Gqu6ZGRZisAqyJrCat0VY+vQrJBqpEyqvANIt/z nyx-wsl"
@@ -46,28 +55,25 @@
     };
     
     # point is not to not have it in the store point is just for it to not be directly in the config or git
-    environment.etc = {
-      "secrets/wireless.env".source = "./wireless.env";
-    };
+    #environment.etc = {
+    #  "secrets/wireless.env".source = "${./wireless.env}";
+    #};
 
     networking = {
       # make this an option
       hostName = "nixprinter";
+      #networkmanager.enable = false; # cant be 
       networkmanager.enable = true;
       wireless = {
         enable = true; # controls wpa_suplicant backend
-        userControlled.enable = true;
-        environmentFile = "/env/secrets/wireless.env";
+        #userControlled.enable = true;
+        #environmentFile = "/env/secrets/wireless.env";
 
         networks = {
-          butz = {
-              psk = "@PSK_HOME@";
-          }
         };
 
       };
     };
-
 
     services.openssh.enable = true;
     # services.gnome.gnome-keyring.enable = true;
@@ -90,60 +96,51 @@
       videoDrivers = [ "modesetting" ];
     };
 
-    systemd.services.btattach = {
-      before = [ "bluetooth.service" ];
-      after = [ "dev-ttyAMA0.device" ];
-      wantedBy = [ "multi-user.target" ];
-      serviceConfig = {
-        ExecStart = "${pkgs.bluez}/bin/btattach -B /dev/ttyAMA0 -P bcm -S 3000000";
-      };
-    };
-
     environment.noXlibs = lib.mkForce false;
-
-    # "${nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64.nix" creates a
-    # disk with this label on first boot. Therefore, we need to keep it. It is the
-    # only information from the installer image that we need to keep persistent
-    fileSystems."/" = {
-        device = "/dev/disk/by-label/NIXOS_SD";
-        fsType = "ext4";
-      };
-
-    boot = {
-      kernelPackages = lib.mkForce pkgs.linuxKernel.packages.linux_rpi4;
-      loader = {
-        generic-extlinux-compatible.enable = lib.mkDefault true;
-        grub.enable = lib.mkDefault false;
-      };
-    };
-
-    hardware = {
-      raspberry-pi."4".fkms-3d.enable = true;
-      # audio still not building
-      #raspberry-pi."4".apply-overlays-dtmerge.enable = true;
-      # raspberry-pi."4".audio.enable = true;
-      # pulseaudio.enable = true;
-    };
-    # sound.enable = true;
-    console.enable = false;
 
     nix.settings = {
       experimental-features = lib.mkDefault "nix-command flakes";
       trusted-users = [ "root" "@wheel" ];
     };
 
-    # see these issues for why this is needed
-    #https://github.com/NixOS/nixpkgs/issues/154163
-    #https://github.com/NixOS/nixpkgs/issues/126755
-    # yes this is needed confirmed via ablation testing
-    nixpkgs.overlays = [
-      (final: prev: {
-        makeModulesClosure = x:
-          prev.makeModulesClosure (x // { allowMissing = true; });
-      })
-    ];
-
     nixpkgs.config.allowUnfree = true;
+
+    #systemd.services = {
+    #  boot-fix = {
+    #    script =
+    #      "/run/current-system/sw/bin/ln -s /run/current-system /var/run/current-system || true";
+    #    wantedBy = [ "multi-user.target" ];
+    #  };
+
+    #  btattach = {
+    #    before = [ "bluetooth.service" ];
+    #    after = [ "dev-ttyAMA0.device" ];
+    #    wantedBy = [ "multi-user.target" ];
+    #    serviceConfig = {
+    #      ExecStart = "${pkgs.bluez}/bin/btattach -B /dev/ttyAMA0 -P bcm -S 3000000";
+    #    };
+    #  };
+
+    #  #vncserver = lib.mkIf config.vnc.enable {
+    #  #  enable = true;
+    #  #  description = "tigervnc server";
+    #  #  serviceConfig = {
+    #  #    Type = "simple";
+    #  #    ExecStart =
+    #  #      "${pkgs.tigervnc}/bin/x0vncserver -PAMService=login -PlainUsers=${config.altius.users.primary} -SecurityTypes=VeNCrypt,TLSPlain";
+    #  #    User = "${config.altius.users.primary}";
+    #  #    Group = "${config.altius.users.primary}";
+    #  #    KillSignal = "SIGKILL";
+    #  #    #Environment = [ "DISPLAY=${cfg.display}" ];
+    #  #  };
+    #  #  requires = [ ];
+    #  #  wantedBy = [ "multi-user.target" ];
+    #  #  after = (if config.xvfb.enable then
+    #  #    [ "xvfb.service" ]
+    #  #  else
+    #  #    [ "multi-user.target" ]) ++ [ "sysinit.target" ];
+    #  #};
+    #};
 
     system.stateVersion = config.system.nixos.release;
   };

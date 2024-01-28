@@ -27,24 +27,45 @@
     in
     rec {
       images = {
-        rpi4 = (self.nixosConfigurations.rpi4.extendModules {
-          modules = [ "${inputs.nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64-new-kernel-no-zfs-installer.nix" ];
+        rpi4 = (self.nixosConfigurations.rpi4-hardware.extendModules {
+          modules = [ 
+            ({...}: { 
+                imports = ["${inputs.nixpkgs}/nixos/modules/installer/sd-card/sd-image-aarch64-new-kernel-no-zfs-installer.nix"];
+                config = {
+                    sdImage.imageBaseName = "rpi4-base";
+                    sdImage.compressImage = false;
+                };
+            })
+          ];
         }).config.system.build.sdImage;
       };
 
       nixosConfigurations = {
+
         rpi4 = nixpkgs.lib.nixosSystem {
           system = system;
           specialArgs = {
             inherit inputs;
-            # inherit system;
+          };
+          modules = [
+            ./rpi-4-base.nix
+          ];
+        };
+
+        rpi4-hardware = nixpkgs.lib.nixosSystem {
+          system = system;
+          specialArgs = {
+            inherit inputs;
           };
           modules = [
             nixos-hardware.nixosModules.raspberry-pi-4
+            ./rpi-4-hardware.nix
             ./rpi-4-base.nix
             ./klipper.nix
           ];
         };
+
+
       };
     };
 }
