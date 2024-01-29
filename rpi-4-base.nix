@@ -12,8 +12,8 @@
 
   config = {
 
-    boot.loader.systemd-boot.enable = true;
-    boot.loader.efi.canTouchEfiVariables = true;
+    #boot.loader.systemd-boot.enable = true;
+    #boot.loader.efi.canTouchEfiVariables = true;
 
     #hardware.opengl.enable = true;
     #hardware.opengl.driSupport = true;
@@ -65,14 +65,13 @@
       #networkmanager.enable = false; # cant be 
       networkmanager.enable = true;
       wireless = {
-        enable = true; # controls wpa_suplicant backend
+        enable = false; # controls wpa_suplicant backend
         #userControlled.enable = true;
         #environmentFile = "/env/secrets/wireless.env";
-
-        networks = {
-        };
-
+        #networks = {
+        #};
       };
+
     };
 
     services.openssh.enable = true;
